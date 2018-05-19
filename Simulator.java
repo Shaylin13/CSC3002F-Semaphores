@@ -21,7 +21,7 @@ public class Simulator
         }
         else
         {
-            System.out.println("File Name: "+fileName);
+            System.out.println("Input from File: "+fileName+"\n");
             
             //set up file for reading
             File inputFile = new File(fileName);
@@ -30,6 +30,9 @@ public class Simulator
             //get the Number of people and number of branches
             numberPeople = Integer.parseInt(br.readLine());
             numberBranches = Integer.parseInt(br.readLine());
+            
+            //create an array to store Person objects
+            ArrayList<Person> AL_employees = new ArrayList<>();
             
             //read the rest of the people data
             String line = "";
@@ -40,7 +43,7 @@ public class Simulator
                int personNumber = Integer.parseInt(line.substring(0,start));
                
                //remove brackets so can split using ','
-               for(int i=start; i<line.length(); i++)
+               for(int i=start+1; i<line.length(); i++)
                {
                     if(line.charAt(i) != '(' && line.charAt(i) != ')')
                     {
@@ -49,21 +52,52 @@ public class Simulator
                } 
                
                //split the data to obtain ints
-               String[] pairs = processedLine.split(", ");
+               String[] data = processedLine.split(", ");
                
-               //testing
-               /*System.out.print(personNumber+" :");
-               for(int i =0; i<pairs.length-1;i+=2)
+               //create Stop objects
+               ArrayDeque<Stop> AD_Stops = new ArrayDeque<>();
+               for(int i=0; i<data.length-1; i+=2)
                {
-                    System.out.print(" "+pairs[i]+"-"+pairs[i+1]);
+                    //System.out.print(data[i]);
+                    //System.out.println(data[i+1]);
+                    int branch = Integer.parseInt(data[i]);
+                    int duration = Integer.parseInt(data[i+1]);
+                    
+                    AD_Stops.add(new Stop(branch, duration));
                }
-               System.out.println("");*/
                
+               //add person with array of stops
+               Semaphore Sim_Sem = new Semaphore(0); // semaphores of bound 0 for blocking
+               AL_employees.add(new Person(personNumber, AD_Stops, Sim_Sem));
+               
+               //clear line for reading next person
                processedLine="";
                
-            }//end of while
+            }//end of while for reading Person data from file
+            
+            //===============================================================
+            //-------------loque narosh my warrior---------------------------
+            
+            //create branch objects
+            Branch[] branches = new Branch[numberBranches];
+            for(int i = 0; i < numberBranches; ++i){
+                branches[i] = new Branch();
+            }
+            branches[0].add(AL_employees); // add all employees intially to HQ
+
+            final long startTime = System.currentTimeMillis();
+            Person.startTime = startTime;
+            final Taxi mainTaxi = new Taxi(branches, AL_employees, startTime);
+            Person.TAXI = mainTaxi;
+            
+            Taxi.stillWorking = AL_employees.size();
+            mainTaxi.start();
+            
+            for(Person p : AL_employees) p.start(); // start a thread for each person in the array of Person objects
+            //---------------------------------------------------------------
+            //===============================================================
         }
     
-    }
+    }//main end
 
-}
+}//class end
