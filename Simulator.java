@@ -1,4 +1,5 @@
 //PDYSHA009 Semaphores Assignment
+//see readme for any information
 
 import java.io.*;
 import java.util.ArrayDeque;
@@ -81,19 +82,24 @@ public class Simulator
             //create branch objects
             Branch[] branches = new Branch[numberBranches];
             for(int i = 0; i < numberBranches; ++i){
-                branches[i] = new Branch();
+                branches[i] = new Branch(i);
             }
-            branches[0].add(AL_employees); // add all employees intially to HQ
+            // all employees start at HQ they are initially added here
+            branches[0].add(AL_employees);
 
             final long startTime = System.currentTimeMillis();
             Person.startTime = startTime;
             final Taxi mainTaxi = new Taxi(branches, AL_employees, startTime);
             Person.TAXI = mainTaxi;
             
-            Taxi.stillWorking = AL_employees.size();
+            Taxi.currentlyProcessing = AL_employees.size();
             mainTaxi.start();
             
-            for(Person p : AL_employees) p.start(); // start a thread for each person in the array of Person objects
+            for(Person employee : AL_employees)
+            {
+                // start a thread for each person in the array of Person objects
+                employee.start();
+            }
             //---------------------------------------------------------------
             //===============================================================
         }
